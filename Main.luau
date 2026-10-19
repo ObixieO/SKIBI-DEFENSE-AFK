@@ -1,6 +1,5 @@
 local str = [[
 
-
 queue_on_teleport("Teleported = true "..readfile("ChachedSkibiDefense"))
 
 if game.PlaceId ~= 14279724900 then delfile("TDM/SkibiDefense/settings.ini") return end
@@ -308,7 +307,7 @@ local function GetFiles()
 
 	local Folder = listfiles(`{SkibiDefenseFolder}{GetChapter()}`)
 	for i,v in pairs(Folder) do
-		Folder[i] = string.gsub(v,`{SkibiDefenseFolder}{GetChapter()}`,"",1)
+		Folder[i] = string.sub(v,#(`{SkibiDefenseFolder}{GetChapter()}`)+1)
 	end
 
 	return Folder
