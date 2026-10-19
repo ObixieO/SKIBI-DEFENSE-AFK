@@ -1,3 +1,6 @@
+local str = [[
+
+
 queue_on_teleport("Teleported = true "..readfile("ChachedSkibiDefense"))
 
 if game.PlaceId ~= 14279724900 then delfile("TDM/SkibiDefense/settings.ini") return end
@@ -530,7 +533,7 @@ local function RegistTower(TowerName,TowerCFrame,TowerGUID)
 		Upgrade = {},
 		TargetMode = {},
 		Ability = {},
-		Tick = GetServerRunTime(),
+		Tick = RunTime.Value-LocalPlayer:GetNetworkPing(),
 		BoostSelect = {},
 		DrillMoveRequest = {},
 		PencilCloneRequest = {},
@@ -599,3 +602,9 @@ if not GlobalTDMRunid then
 		end
 	end)
 end
+
+]]
+
+writefile("ChachedSkibiDefense",str)
+
+loadstring(readfile("ChachedSkibiDefense"))()
