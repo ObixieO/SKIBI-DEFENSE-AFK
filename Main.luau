@@ -1,6 +1,3 @@
-local str = [[
-
-
 queue_on_teleport("Teleported = true "..readfile("ChachedSkibiDefense"))
 
 if game.PlaceId ~= 14279724900 then delfile("TDM/SkibiDefense/settings.ini") return end
@@ -167,6 +164,78 @@ local FILE = {
 	WaveSkip = {},
 }
 
+
+local NeedLog = {
+	[RS.Event.UpgradeTower] = function(args)
+		local TowerGUID = args[1]
+		if FILE[TowerGUID] then
+			table.insert(FILE[TowerGUID].Upgrade,GetServerRunTime())
+		end
+	end,
+	[RS.Event.RemoveTower] = function(args)
+		local TowerGUID = args[1]
+		if FILE[TowerGUID] then
+			FILE[TowerGUID].SellTick = GetServerRunTime()
+		end
+	end,
+	[RS.Event.ChangeTowerTargetMode] = function(args)
+		local TowerGUID = args[1]
+		if FILE[TowerGUID] then
+			table.insert(FILE[TowerGUID].TargetMode,GetServerRunTime())
+		end
+	end,
+	[RS.BoostSelect] = function(args)
+		local TowerGUID = args[1]
+		local TargetGUID = args[2]
+		if TowerGUID and TargetGUID and FILE[TowerGUID] and FILE[TargetGUID] then
+			table.insert(FILE[TowerGUID].BoostSelect,{
+				Name = TargetGUID,
+				Tick = GetServerRunTime()
+			})
+		end
+	end,
+	[RS.Event.PencilCloneRequest] = function(args)
+		local TowerGUID = args[1]
+		local TargetGUID = args[2]
+		local CFrame = args[3]
+		if TowerGUID and TargetGUID and FILE[tostring(TowerGUID)] and FILE[tostring(TargetGUID)] then
+			table.insert(FILE[TowerGUID].PencilCloneRequest,{
+				Name = TargetGUID,
+				Tick = GetServerRunTime(),
+				CFrame = tostring(CFrame.Position),
+			})
+		end
+	end,
+	[RS.Event.DrillMoveRequest] = function(args)
+		local TowerGUID = args[1]
+		local CFrame = args[2]
+		if TowerGUID and CFrame and FILE[TowerGUID] then
+			table.insert(FILE[TowerGUID].DrillMoveRequest,{
+				Tick = GetServerRunTime(),
+				CFrame = tostring(CFrame.Position),
+			})
+		end
+	end,
+	[RS.Event.waveSkip] = function(args)
+		table.insert(FILE.WaveSkip,GetServerRunTime())
+	end,
+	[RS.TowerScript.spawnTowerAbility] = function(args)
+		local TowerGUID = args[1]
+		local AbilityName = args[2]
+		if TowerGUID and AbilityName and FILE[TowerGUID] then
+			table.insert(FILE[TowerGUID].Ability,{
+				Tick = GetServerRunTime(),
+				Name = AbilityName,
+			})
+		end
+	end,
+}
+
+
+local IsA =  game.IsA
+
+
+local OldNameCall
 Tab:CreateToggle({
 	Name = "录制",
 	CurrentValue = Recording,
@@ -176,6 +245,27 @@ Tab:CreateToggle({
 				AutoSkip = {},
 				WaveSkip = {},
 			}
+			
+			if not OldNameCall then
+				OldNameCall = hookmetamethod(game,"__namecall",newcclosure(function(...)
+					local method = getnamecallmethod()
+					local remote = cloneref(...)
+					if not checkcaller() and Recording and typeof(remote) == "Instance" then
+						if method then
+							local args = {select(2,...)}
+							if (method == "FireServer" and IsA(remote,"RemoteEvent")) or (method == "InvokeServer" and IsA(remote,"RemoteFunction")) then
+								for Event,Function in NeedLog do
+									if Event == (...) then
+										Function(args)
+									end
+								end
+							end
+						end
+					end
+
+					return OldNameCall(...)
+				end))
+			end
 		end
 		Recording = Value
 	end    
@@ -464,93 +554,6 @@ local function UnfreezeAllTowers()
 	return count
 end
 
-local NeedLog = {
-	[RS.Event.UpgradeTower] = function(args)
-		local TowerGUID = args[1]
-		if FILE[TowerGUID] then
-			table.insert(FILE[TowerGUID].Upgrade,GetServerRunTime())
-		end
-	end,
-	[RS.Event.RemoveTower] = function(args)
-		local TowerGUID = args[1]
-		if FILE[TowerGUID] then
-			FILE[TowerGUID].SellTick = GetServerRunTime()
-		end
-	end,
-	[RS.Event.ChangeTowerTargetMode] = function(args)
-		local TowerGUID = args[1]
-		if FILE[TowerGUID] then
-			table.insert(FILE[TowerGUID].TargetMode,GetServerRunTime())
-		end
-	end,
-	[RS.BoostSelect] = function(args)
-		local TowerGUID = args[1]
-		local TargetGUID = args[2]
-		if TowerGUID and TargetGUID and FILE[TowerGUID] and FILE[TargetGUID] then
-			table.insert(FILE[TowerGUID].BoostSelect,{
-				Name = TargetGUID,
-				Tick = GetServerRunTime()
-			})
-		end
-	end,
-	[RS.Event.PencilCloneRequest] = function(args)
-		local TowerGUID = args[1]
-		local TargetGUID = args[2]
-		local CFrame = args[3]
-		if TowerGUID and TargetGUID and FILE[tostring(TowerGUID)] and FILE[tostring(TargetGUID)] then
-			table.insert(FILE[TowerGUID].PencilCloneRequest,{
-				Name = TargetGUID,
-				Tick = GetServerRunTime(),
-				CFrame = tostring(CFrame.Position),
-			})
-		end
-	end,
-	[RS.Event.DrillMoveRequest] = function(args)
-		local TowerGUID = args[1]
-		local CFrame = args[2]
-		if TowerGUID and CFrame and FILE[TowerGUID] then
-			table.insert(FILE[TowerGUID].DrillMoveRequest,{
-				Tick = GetServerRunTime(),
-				CFrame = tostring(CFrame.Position),
-			})
-		end
-	end,
-	[RS.Event.waveSkip] = function(args)
-		table.insert(FILE.WaveSkip,GetServerRunTime())
-	end,
-	[RS.TowerScript.spawnTowerAbility] = function(args)
-		local TowerGUID = args[1]
-		local AbilityName = args[2]
-		if TowerGUID and AbilityName and FILE[TowerGUID] then
-			table.insert(FILE[TowerGUID].Ability,{
-				Tick = GetServerRunTime(),
-				Name = AbilityName,
-			})
-		end
-	end,
-}
-
-
-local IsA =  game.IsA
-local OldNameCall;OldNameCall = hookmetamethod(game,"__namecall",newcclosure(function(...)
-	local method = getnamecallmethod()
-	local remote = cloneref(...)
-	if not checkcaller() and Recording and typeof(remote) == "Instance" then
-		if method then
-			local args = {select(2,...)}
-			if (method == "FireServer" and IsA(remote,"RemoteEvent")) or (method == "InvokeServer" and IsA(remote,"RemoteFunction")) then
-				for Event,Function in NeedLog do
-					if Event == (...) then
-						Function(args)
-					end
-				end
-			end
-		end
-	end
-
-	return OldNameCall(...)
-end))
-
 RS.Event.placeTower.OnClientEvent:Connect(function(Player,TowerName,TowerCFrame,TowerGUID)
 	if Player == LocalPlayer then
 		RegistTower(TowerName,TowerCFrame,TowerGUID)
@@ -596,9 +599,3 @@ if not GlobalTDMRunid then
 		end
 	end)
 end
-
-]]
-
-writefile("ChachedSkibiDefense",str)
-
-loadstring(readfile("ChachedSkibiDefense"))()
