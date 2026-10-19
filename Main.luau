@@ -1,5 +1,6 @@
 local str = [[
 
+
 queue_on_teleport("Teleported = true "..readfile("ChachedSkibiDefense"))
 
 if game.PlaceId ~= 14279724900 then delfile("TDM/SkibiDefense/settings.ini") return end
@@ -96,6 +97,8 @@ local Window = Starlight:CreateWindow({
 
 local Game = RS:WaitForChild("Game")
 local Chapter = RS:FindFirstChild("Chapter")
+
+local PICK_INDEX = 1
 local RunTime = Game.Clock
 
 local SkibiDefenseFolder = "TDM/SkibiDefense/"
@@ -335,12 +338,12 @@ Files = Tab:CreateDropdown({
 })
 
 
-local Running = get("Running","false")
+local Running = get("Running","false") == "true"
 local AutoSkipRunning = false
 
 Tab:CreateToggle({
 	Name = "开始运行",
-	CurrentValue = Running == "true",
+	CurrentValue = Running,
 	Callback = function(Value)
 		set("Running",tostring(Value))
 
@@ -501,25 +504,35 @@ Tab:CreateDropdown({
 	end,
 })
 
-local LockSpeed = get("LockSpeed","false")
+local LockSpeed = get("LockSpeed","false") == "true"
 
 Tab:CreateToggle({
 	Name = "锁定倍速",
-	CurrentValue = LockSpeed == "true",
+	CurrentValue = LockSpeed,
 	Callback = function(Value)
 		set("LockSpeed",tostring(Value))
 		LockSpeed = Value
 	end    
 })
-local autounfreeze = get("autounfreeze","false")
+local autounfreeze = get("autounfreeze","false") == "true"
 Tab:CreateToggle({
 	Name = "自动解冻塔",
-	CurrentValue = autounfreeze == "true",
+	CurrentValue = autounfreeze,
 	Callback = function(Value)
 		autounfreeze = Value
 		set("autounfreeze",tostring(Value))
 	end    
 })
+local AutoCurseVote = get("autocursevote","false") == "true"
+Tab:CreateToggle({
+	Name = "自动选择诅咒",
+	CurrentValue = AutoCurseVote,
+	Callback = function(Value)
+		AutoCurseVote = Value
+		set("autocursevote",tostring(Value))
+	end    
+})
+
 
 
 local lastSpeedSend = 0
@@ -568,6 +581,13 @@ RS.Event.waveSkip.OnClientEvent:Connect(function()
 	end
 end)
 
+RS.CurseVote.OnClientEvent:Connect(function(action, cards)
+	if action ~= "Show" or not AutoCurseVote then return end
+	if typeof(cards) == "table" and cards[PICK_INDEX] then
+		RS.CurseVote:FireServer("Vote", PICK_INDEX)
+	end
+end)
+
 local OldGameEnd;OldGameEnd = hookfunction(getcallbackmember(RS.gameEnded,"OnClientInvoke"),function(Infos,...)
 	Replay()
 
@@ -601,8 +621,8 @@ if not GlobalTDMRunid then
 		end
 	end)
 end
-
 ]]
+
 
 writefile("ChachedSkibiDefense",str)
 
