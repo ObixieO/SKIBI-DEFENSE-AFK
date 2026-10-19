@@ -1,5 +1,6 @@
 local str = [[
 
+
 queue_on_teleport("Teleported = true "..readfile("ChachedSkibiDefense"))
 
 if game.PlaceId ~= 14279724900 then delfile("TDM/SkibiDefense/settings.ini") return end
@@ -532,16 +533,14 @@ local NeedLog = {
 
 local IsA =  game.IsA
 local OldNameCall;OldNameCall = hookmetamethod(game,"__namecall",newcclosure(function(...)
-	local method = string.lower(getnamecallmethod() or "")
-	if not checkcaller() and Recording and typeof(...) == "Instance" then
+	local method = getnamecallmethod()
+	local remote = cloneref(...)
+	if not checkcaller() and Recording and typeof(remote) == "Instance" then
 		if method then
-
-			local self = (...)
 			local args = {select(2,...)}
-
-			if (method == "fireserver" and IsA(self,"RemoteEvent")) or (method == "invokeserver" and IsA(self,"RemoteFunction")) then
+			if (method == "FireServer" and IsA(remote,"RemoteEvent")) or (method == "InvokeServer" and IsA(remote,"RemoteFunction")) then
 				for Event,Function in NeedLog do
-					if Event == self then
+					if Event == (...) then
 						Function(args)
 					end
 				end
