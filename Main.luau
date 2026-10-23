@@ -1,6 +1,5 @@
 local str = [[
 
-
 queue_on_teleport("Teleported = true "..readfile("ChachedSkibiDefense"))
 
 if game.PlaceId ~= 14279724900 then delfile("TDM/SkibiDefense/settings.ini") return end
@@ -100,6 +99,10 @@ local Chapter = RS:FindFirstChild("Chapter")
 
 local PICK_INDEX = 1
 local RunTime = Game.Clock
+local Loading = RS:WaitForChild("Loading")
+
+repeat task.wait()
+until Loading:GetAttribute("AssetsReady")
 
 local SkibiDefenseFolder = "TDM/SkibiDefense/"
 local SettingPATH = `{SkibiDefenseFolder}settings.ini`
@@ -427,7 +430,7 @@ Tab:CreateToggle({
 
 							for i,t in v.BoostSelect do
 								if t.Tick < GetServerRunTime() then
-									RS.BoostSelect:FireServer(v.ID,t.Name)
+									RS.BoostSelect:FireServer(tonumber(v.ID),t.Name)
 									v.BoostSelect[i] = nil
 								end
 							end
