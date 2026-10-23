@@ -196,7 +196,7 @@ local NeedLog = {
 		local TowerGUID = args[1]
 		local TargetGUID = args[2]
 		if TowerGUID and TargetGUID and FILE[tostring(TowerGUID)] and FILE[TargetGUID] then
-			table.insert(FILE[TowerGUID].BoostSelect,{
+			table.insert(FILE[tostring(TowerGUID)].BoostSelect,{
 				Name = TargetGUID,
 				Tick = GetServerRunTime()
 			})
@@ -207,7 +207,7 @@ local NeedLog = {
 		local TargetGUID = args[2]
 		local CFrame = args[3]
 		if TowerGUID and TargetGUID and FILE[tostring(TowerGUID)] and FILE[tostring(TargetGUID)] then
-			table.insert(FILE[TowerGUID].PencilCloneRequest,{
+			table.insert(FILE[tostring(TowerGUID)].PencilCloneRequest,{
 				Name = TargetGUID,
 				Tick = GetServerRunTime(),
 				CFrame = tostring(CFrame.Position),
