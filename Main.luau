@@ -427,6 +427,15 @@ Tab:CreateToggle({
 									v.Ability[i] = nil
 								end
 							end
+							for i,t in v.BoostSelect do
+                                if t.Tick < GetServerRunTime() then
+                                    warn("[BoostSelect]", "src=", v.ID, "tgt=", t.Name,
+                                    "srcSpawned=", v.Spawned,
+                                    "tgtSpawned=", File[t.Name] and File[t.Name].Spawned)
+                                    RS.BoostSelect:FireServer(tonumber(v.ID), t.Name)
+                                    v.BoostSelect[i] = nil
+                                end
+                            end
 
 							for i,t in v.BoostSelect do
 								if t.Tick < GetServerRunTime() then
